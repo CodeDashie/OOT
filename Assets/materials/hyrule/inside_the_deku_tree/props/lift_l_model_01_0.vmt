@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "Hyrule/inside_the_deku_tree/props/lift_l_model_01_0"
+	"$phong" "1"
+	"$basemapalphaphongmask" "1"
+}

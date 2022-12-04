@@ -1,0 +1,11 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "Hyrule/dungeon_assets/boss_door/doorkagiboss_mo_0_lock"
+	"$phong" "0"
+	"$basemapalphaphongmask" "1"
+
+	"$envmap" "Hyrule/dungeon_assets/common/cubemap"
+	"$envmapmask" "Hyrule/dungeon_assets/boss_door/doorkagiboss_mo_0_lock_envmap"
+	"$envmaptint" "[1 0.7 0.08]"
+	"$envmapcontrast" "1"
+}

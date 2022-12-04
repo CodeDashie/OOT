@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "Hyrule/dungeon_assets/hookshot_targets/field_fshot2_mo_0"
+	"$phong" "1"
+	"$basemapalphaphongmask" "1"
+}

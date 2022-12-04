@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	"$alphatest" "1"
+	"$basetexture" "Hyrule/inside_the_deku_tree/props/dg01_kumo_01_2__0"
+	"$nocull" "1"
+	"$alphatestreference" ".3"
+}
