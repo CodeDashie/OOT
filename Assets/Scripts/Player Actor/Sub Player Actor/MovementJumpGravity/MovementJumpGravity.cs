@@ -43,6 +43,9 @@ public class MovementJumpGravity : MonoBehaviour
                 Input.GetAxisRaw("Vertical")
             );
 
+            float mag = new Vector2(v.x, v.y).magnitude;
+            if (mag > 1.0f)
+                mag = 1.0f;
 
             float tempX = v.x;
             v.x = v.x * Mathf.Sqrt(1 - 0.5f * (v.y * v.y));
@@ -51,7 +54,7 @@ public class MovementJumpGravity : MonoBehaviour
             
             // facing, move and animation if ordered to
             if (!(v.x == 0.0f && v.y == 0.0f))
-                fixFacingAngleToCamera(ref v);
+                fixFacingAngleToCamera(ref v, mag);
             
             // stop walk animation
             else
@@ -75,7 +78,7 @@ public class MovementJumpGravity : MonoBehaviour
         }
     }
 
-    void fixFacingAngleToCamera(ref Vector2 v)
+    void fixFacingAngleToCamera(ref Vector2 v, float mag)
     {
         // facing from desired direction with camera angle in mind
         float newFacing = (Rad2Deg * Mathf.Atan2(v.x, v.y)) +
@@ -84,13 +87,15 @@ public class MovementJumpGravity : MonoBehaviour
         // new walk position from newFacing
         if (Input.GetButton("Sprint") && !_pA.isHoldingObject)
         {
-            v.x = _pA.runSpeed * Mathf.Sin(newFacing * Deg2Rad);
-            v.y = _pA.runSpeed * Mathf.Cos(newFacing * Deg2Rad);
+            v.x = (_pA.runSpeed * mag) * Mathf.Sin(newFacing * Deg2Rad);
+            v.y = (_pA.runSpeed * mag) * Mathf.Cos(newFacing * Deg2Rad);
+            _pA.anim.speed = mag * 2.5f;
         }
         else
         {
-            v.x = _pA.walkSpeed * Mathf.Sin(newFacing * Deg2Rad);
-            v.y = _pA.walkSpeed * Mathf.Cos(newFacing * Deg2Rad);
+            v.x = (_pA.walkSpeed * mag) * Mathf.Sin(newFacing * Deg2Rad);
+            v.y = (_pA.walkSpeed * mag) * Mathf.Cos(newFacing * Deg2Rad);
+            _pA.anim.speed = mag * 2.5f;
         }
         // run walk animation
         if (!_pA.isWalking && _pA.controller.isGrounded)
@@ -150,6 +155,7 @@ public class MovementJumpGravity : MonoBehaviour
             _pA.anim.SetTrigger("isJumping");
             _pA.isJumping = true;
             _pA.fallVelocity = _pA.jumpVelocity;
+            Debug.Log("jump");
         }
         // gravity
         else if (!_pA.controller.isGrounded)
@@ -162,6 +168,7 @@ public class MovementJumpGravity : MonoBehaviour
         // landed
         else
         {
+            _pA.anim.ResetTrigger("isJumping");
             _pA.anim.ResetTrigger("isFalling");
             _pA.fallVelocity = _pA.groundedGravity;
             // landed, so end jump animation if it's still going

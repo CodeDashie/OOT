@@ -3666,7 +3666,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1957555374}
-  m_LocalRotation: {x: 0.14395139, y: -0.000000003459818, z: 5.032877e-10, w: 0.9895848}
+  m_LocalRotation: {x: 0.14395137, y: 0.000000029694181, z: -0.0000000043195065, w: 0.9895848}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -3778,8 +3778,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   flashlightEnabled: 0
-  walkSpeed: 5
-  runSpeed: 10
+  walkSpeed: 15
+  runSpeed: 30
   turnSpeed: 657.63
   jumpVelocity: 10
   gravity: -0.4
