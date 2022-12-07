@@ -10,16 +10,21 @@ public class MovementJumpGravity : MonoBehaviour
     const float PI = 3.14159265358979f;
     const float Rad2Deg = 180.0f / PI;
     const float Deg2Rad = PI / 180.0f;
+    static readonly string[] Anim = { "IsIdling", "IsWalking", "IsJumping", "IsFalling" };
 
     public void SetValues(PlayerActor playerActor)
     {
         this._pA = playerActor;
     }
 
-    void ResetAllTriggers()
+    void ResetAllBools(string s)
     {
-        foreach (AnimatorControllerParameter parameter in _pA.anim.parameters)
-            _pA.anim.ResetTrigger(parameter.name);
+        for (int i = 0; i < Anim.Length; i++)
+        {
+            Debug.Log("Check " + i);
+            if (Anim[i] != s)
+                _pA.anim.SetBool(Anim[i], false);
+        }
     }
 
     void FixedUpdate()
@@ -29,7 +34,7 @@ public class MovementJumpGravity : MonoBehaviour
 
     void movement()
     {
-        if (_pA.state == PlayerActor.State.WALKING)
+        //if (_pA.state == PlayerActor.State.WALKING)
         {
             Gamepad gamepad = Gamepad.current;
             if (gamepad == null)
@@ -73,8 +78,11 @@ public class MovementJumpGravity : MonoBehaviour
         if (_pA.isWalking && _pA.controller.isGrounded)
         {
             _pA.isWalking = false;
-            _pA.anim.ResetTrigger("isWalking");
-            _pA.anim.SetTrigger("isIdling");
+            //_pA.anim.ResetTrigger("isWalking");
+            //ResetAllBools();
+            ResetAllBools("IsIdling");
+            //_pA.anim.SetBool("IsWalking", false);
+            _pA.anim.SetBool("IsIdling", true);
         }
     }
 
@@ -101,8 +109,11 @@ public class MovementJumpGravity : MonoBehaviour
         if (!_pA.isWalking && _pA.controller.isGrounded)
         {
             _pA.isWalking = true;
-            _pA.anim.ResetTrigger("isIdling");
-            _pA.anim.SetTrigger("isWalking");
+            //_pA.anim.SetBool("IsIdling", false);
+            ResetAllBools("IsWalking");
+            //ResetAllBools();
+            _pA.anim.SetBool("IsWalking", true);
+            Debug.Log("IsWalking");
         }
         setFacing(newFacing);
     }
@@ -152,7 +163,9 @@ public class MovementJumpGravity : MonoBehaviour
         // jump
         if (_pA.controller.isGrounded && Input.GetButton("Jump") && !_pA.isHoldingObject)
         {
-            _pA.anim.SetTrigger("isJumping");
+            //ResetAllBools();
+            ResetAllBools("IsJumping");
+            _pA.anim.SetBool("IsJumping", true);
             _pA.isJumping = true;
             _pA.fallVelocity = _pA.jumpVelocity;
             Debug.Log("jump");
@@ -160,33 +173,50 @@ public class MovementJumpGravity : MonoBehaviour
         // gravity
         else if (!_pA.controller.isGrounded)
         {
-            ResetAllTriggers();
-            if (!_pA.isHoldingObject && _pA.fallVelocity < -10.0f && !_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Falling"))
-                _pA.anim.SetTrigger("isFalling");
+            //ResetAllBools();
+            if (!_pA.isHoldingObject && _pA.fallVelocity < -2.0f && !_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Falling"))
+            {
+                ResetAllBools("IsFalling");
+                _pA.anim.SetBool("IsFalling", true);
+            }
             _pA.fallVelocity += _pA.gravity;
         }
         // landed
         else
         {
-            _pA.anim.ResetTrigger("isJumping");
-            _pA.anim.ResetTrigger("isFalling");
+            //ResetAllBools();
+            //_pA.anim.ResetTrigger("isJumping");
+            //_pA.anim.ResetTrigger("isFalling");
             _pA.fallVelocity = _pA.groundedGravity;
             // landed, so end jump animation if it's still going
 
             if (_pA.isJumping)
             {
                 _pA.isJumping = false;
+                Debug.Log("Land");
                 if (_pA.isWalking)
-                    _pA.anim.SetTrigger("isWalking");
-                else if (!_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
-                        _pA.anim.SetTrigger("isIdling");
+                {
+                    ResetAllBools("IsWalking");
+                    _pA.anim.SetBool("IsWalking", true);
+                }
+                else
+                {
+                    ResetAllBools("IsIdling");
+                    _pA.anim.SetBool("IsIdling", true);
+                }
             }
             else if(_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Falling"))
             {
                 if (_pA.isWalking)
-                    _pA.anim.SetTrigger("isWalking");
-                else if (!_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
-                        _pA.anim.SetTrigger("isIdling");
+                {
+                    ResetAllBools("IsWalking");
+                    _pA.anim.SetBool("IsWalking", true);
+                }
+                else// if (!_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
+                {
+                    ResetAllBools("IsIdling");
+                    _pA.anim.SetBool("IsIdling", true);
+                }
             }
         }
         
@@ -194,12 +224,12 @@ public class MovementJumpGravity : MonoBehaviour
         if (_pA.isJumping && (_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Jump") || _pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Falling")) &&
             _pA.anim.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1.0f)
         {
-            _pA.isJumping = false;
+            //_pA.isJumping = false;
             if (_pA.isWalking)
-                ;// _pA.anim.SetTrigger("isWalking");
+                ;// _pA.anim.SetBool("isWalking", true);
             else
-                ;// _pA.anim.SetTrigger("isIdling");
-            
+                ;// _pA.anim.SetBool("isIdling", true);
+
         }
     }
 }
