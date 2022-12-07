@@ -48,9 +48,21 @@ public class MovementJumpGravity : MonoBehaviour
                 Input.GetAxisRaw("Vertical")
             );
 
+            // animation speed based on magnitute of input axis
             float mag = new Vector2(v.x, v.y).magnitude;
             if (mag > 1.0f)
                 mag = 1.0f;
+            if (_pA.controller.isGrounded)
+            {
+                if (mag > 0.2f || _pA.anim.GetBool("IsWalking"))
+                    _pA.anim.speed = mag * 2.5f;
+                else if (_pA.anim.GetBool("IsIdling"))
+                    _pA.anim.speed = 1.8f;
+                else
+                    _pA.anim.speed = 0.5f;
+            }
+            else
+                _pA.anim.speed = 1.8f;
 
             float tempX = v.x;
             v.x = v.x * Mathf.Sqrt(1 - 0.5f * (v.y * v.y));
@@ -97,13 +109,11 @@ public class MovementJumpGravity : MonoBehaviour
         {
             v.x = (_pA.runSpeed * mag) * Mathf.Sin(newFacing * Deg2Rad);
             v.y = (_pA.runSpeed * mag) * Mathf.Cos(newFacing * Deg2Rad);
-            _pA.anim.speed = mag * 2.5f;
         }
         else
         {
             v.x = (_pA.walkSpeed * mag) * Mathf.Sin(newFacing * Deg2Rad);
             v.y = (_pA.walkSpeed * mag) * Mathf.Cos(newFacing * Deg2Rad);
-            _pA.anim.speed = mag * 2.5f;
         }
         // run walk animation
         if (!_pA.isWalking && _pA.controller.isGrounded)
@@ -174,7 +184,7 @@ public class MovementJumpGravity : MonoBehaviour
         else if (!_pA.controller.isGrounded)
         {
             //ResetAllBools();
-            if (!_pA.isHoldingObject && _pA.fallVelocity < -2.0f && !_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Falling"))
+            if (!_pA.isHoldingObject && _pA.fallVelocity < -10.0f && !_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Falling"))
             {
                 ResetAllBools("IsFalling");
                 _pA.anim.SetBool("IsFalling", true);
@@ -190,10 +200,10 @@ public class MovementJumpGravity : MonoBehaviour
             _pA.fallVelocity = _pA.groundedGravity;
             // landed, so end jump animation if it's still going
 
-            if (_pA.isJumping)
+            if (true)//(_pA.isJumping)
             {
                 _pA.isJumping = false;
-                Debug.Log("Land");
+                //Debug.Log("Land");
                 if (_pA.isWalking)
                 {
                     ResetAllBools("IsWalking");
