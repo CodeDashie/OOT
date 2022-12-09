@@ -27,9 +27,8 @@ namespace SplineAI
             return new Vector3(x, y, z);
         }
 
-        void OnSceneGUI()
+        protected virtual void OnSceneGUI()
         {
-            Debug.Log("fasdsf");
             UISpline nn = target as UISpline;
             float a = nn.gameObject.transform.eulerAngles.y;
 
@@ -46,6 +45,24 @@ namespace SplineAI
             {
                 Handles.Label(offsetPos(nn.points[i], a) + nn.transform.parent.transform.position, "" + i, style);
                 nn.points[i] = Handles.PositionHandle(nn.points[i], Quaternion.identity);
+            }
+
+            if (Event.current.type == EventType.Repaint)
+            {
+                //UISpline nn = target as UISpline;
+                Ladder ladder = nn.gameObject.GetComponent<Ladder>();
+                if (ladder != null)
+                {
+                    Transform transform = ((UISpline)target).transform;
+                    Handles.color = Handles.zAxisColor;
+                    Handles.ArrowHandleCap(
+                        0,
+                        nn.points[0],
+                        Quaternion.Euler(0, ladder.angle, 0),
+                        4.0f,
+                        EventType.Repaint
+                    );
+                }
             }
         }
     }

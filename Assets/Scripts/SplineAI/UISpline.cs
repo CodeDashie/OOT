@@ -38,7 +38,7 @@ namespace SplineAI
 
             x = r * Mathf.Cos(a);
             z = r * Mathf.Sin(a);
-            
+
             return new Vector3(x, y, z);
         }
 
@@ -65,7 +65,7 @@ namespace SplineAI
                     nodeEditorSize = splineManager.nodeEditorSize;
                 }
             }
-            
+
             //float radius = 0.25f;
             for (int i = 0; i < points.Length; i++)
                 Gizmos.DrawSphere(transform.parent.transform.position + offsetPos(points[i]), nodeEditorSize);

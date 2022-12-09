@@ -9,7 +9,7 @@ namespace SplineAI
     {
         public float NodeCombineDist = 5.0f;
         public float nodeEditorSize = 0.5f;
-        
+
         public struct NodeIndexInSpline
         {
             // array of the stacked nodes and their spline and index in the spline
@@ -21,7 +21,7 @@ namespace SplineAI
         {
             // array of the stacked nodes and their spline and index in the spline
             public List<NodeIndexInSpline> nodesIndexInSpline;
-            
+
             // info on position, connections to other nodes appropriate to this 
             public Vector3 position;
             public List<int> connections;
@@ -99,7 +99,7 @@ namespace SplineAI
                 n.spline = uISpline;
                 n.splineIndex = splineIndex;
                 nodes[index].nodesIndexInSpline.Add(n);
-                
+
                 // go to next index
                 splineIndex++;
             }
