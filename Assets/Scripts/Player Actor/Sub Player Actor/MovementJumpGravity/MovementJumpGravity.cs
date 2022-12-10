@@ -34,7 +34,7 @@ public class MovementJumpGravity : MonoBehaviour
 
     void movement()
     {
-        //if (_pA.state == PlayerActor.State.WALKING)
+        if (_pA.state == PlayerActor.State.WALKING)
         {
             Gamepad gamepad = Gamepad.current;
             if (gamepad == null)

@@ -9,8 +9,9 @@ public class PlayerActor : MonoBehaviour
     {
         WALKING,
         ON_LEDGE,
-        PUSHING_OBJECT
+        PUSHING_OBJECT,
         //HOLDING_OBJECT
+        LADDER
     }
     
     public State state { get; set; }
