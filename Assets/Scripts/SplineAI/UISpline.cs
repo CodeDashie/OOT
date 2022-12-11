@@ -69,6 +69,21 @@ namespace SplineAI
             //float radius = 0.25f;
             for (int i = 0; i < points.Length; i++)
                 Gizmos.DrawSphere(transform.parent.transform.position + offsetPos(points[i]), nodeEditorSize);
+
+            Ladder ladder = GetComponent<Ladder>();
+            if (ladder != null)
+            {
+                Quaternion rotation = Quaternion.Euler(0, ladder.angle, 0);
+                Matrix4x4 trs = Matrix4x4.TRS(transform.parent.transform.position + offsetPos(points[0]), rotation, Vector3.one);
+                Gizmos.matrix = trs;
+                Color32 color = Color.blue;
+                color.a = 125;
+                Gizmos.color = color;
+                float diff = points[1].y - points[0].y;
+                Gizmos.DrawCube(new Vector3(0.0f, diff / 2.0f, 0.0f), new Vector3(3.0f, diff, 0.0001f));
+                Gizmos.matrix = Matrix4x4.identity;
+                Gizmos.color = Color.white;
+            }
         }
     }
 }

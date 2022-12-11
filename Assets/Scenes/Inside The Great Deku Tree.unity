@@ -243,9 +243,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 116309524}
+  - component: {fileID: 116309526}
   - component: {fileID: 116309525}
   m_Layer: 0
-  m_Name: UISline
+  m_Name: UISpline
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -274,12 +275,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 116309523}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5956f9c71d4ba24a81656bc165bed72, type: 3}
+  m_Script: {fileID: 11500000, guid: 6f141e875b958d943b6447c24bf66e84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  angle: 135.61
+--- !u!114 &116309526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 116309523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9a7a150b929565408541311682a62dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   points:
-  - {x: 25, y: 0, z: -29}
-  - {x: 25, y: 22.156082, z: -29}
+  - {x: 25, y: 1, z: -28}
+  - {x: 25, y: 23, z: -28}
 --- !u!1 &141058448
 GameObject:
   m_ObjectHideFlags: 3
@@ -1357,7 +1371,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 524558055}
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: -0.7071068}
-  m_LocalPosition: {x: 5.065274, y: 2.2525978, z: -4.0250435}
+  m_LocalPosition: {x: 0, y: 2.2525978, z: 0}
   m_LocalScale: {x: 1.5000001, y: 4.5, z: 1.5000001}
   m_Children: []
   m_Father: {fileID: 543450652649759335}
@@ -4454,7 +4468,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2137198302}
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: -0.7071068}
-  m_LocalPosition: {x: 5.065274, y: 3.5025978, z: -3.6500435}
+  m_LocalPosition: {x: 0, y: 3.5025978, z: 0}
   m_LocalScale: {x: 0.75000006, y: 1, z: 1.5000001}
   m_Children: []
   m_Father: {fileID: 543450652649759335}

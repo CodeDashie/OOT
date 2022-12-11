@@ -243,11 +243,5 @@ namespace SplineAI
 
             return Mathf.Sqrt(x * x + y * y);
         }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
     }
 }

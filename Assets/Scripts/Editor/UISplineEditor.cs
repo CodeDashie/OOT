@@ -32,6 +32,7 @@ namespace SplineAI
             UISpline nn = target as UISpline;
             float a = nn.gameObject.transform.eulerAngles.y;
 
+            //plane(nn);
             // loop to draw line from point to point in list
             Handles.color = Color.white;
             for (int i = 1; i < nn.points.Length; i++)
@@ -57,9 +58,9 @@ namespace SplineAI
                     Handles.color = Handles.zAxisColor;
                     Handles.ArrowHandleCap(
                         0,
-                        nn.points[0],
+                        new Vector3(nn.points[0].x, nn.points[0].y + ((nn.points[1].y - nn.points[0].y) / 2), nn.points[0].z),
                         Quaternion.Euler(0, ladder.angle, 0),
-                        4.0f,
+                        3.0f,
                         EventType.Repaint
                     );
                 }
