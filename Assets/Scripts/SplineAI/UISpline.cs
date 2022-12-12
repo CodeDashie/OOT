@@ -10,7 +10,7 @@ namespace SplineAI
 
         public void Start()
         {
-            raycastPointsToGround();
+            //raycastPointsToGround();
         }
 
         private void raycastPointsToGround()

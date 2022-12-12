@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GrabLedge : MonoBehaviour
+public class LadderState : MonoBehaviour
 {
-    /*const float HALF_PI = 1.7079632679490f;
+    const float HALF_PI = 1.7079632679490f;
     const float PI = 3.14159265358979f;
     const float TAU = 6.28318530717958f;
     const float Rad2Deg = 180.0f / PI;
@@ -44,7 +44,7 @@ public class GrabLedge : MonoBehaviour
         if (test < 0.0f)
             test += (PI * 2);
         Debug.Log(test);*/
-        /*
+
         if (_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Climb") && _isClimbing)
         {
             const float DISTANCE = 3.0f;
@@ -231,5 +231,5 @@ public class GrabLedge : MonoBehaviour
 
         return Mathf.Sqrt(x * x + y * y);
     }
-    */
+    
 }
