@@ -23,6 +23,7 @@ namespace SplineAI
             colliderObject.transform.position = new Vector3(spline.points[0].x, spline.points[0].y + ((spline.points[1].y - spline.points[0].y) / 2.0f), spline.points[0].z);
             colliderObject.transform.rotation = Quaternion.Euler(0, angle, 0);
             collider = colliderObject.AddComponent<BoxCollider>();
+            colliderObject.AddComponent<Rigidbody>().useGravity = false;
             collider.isTrigger = true;
             collider.size = new Vector3(3.0f, spline.points[1].y - spline.points[0].y, 0.01f);
             //collider.center = new Vector3(spline.points[0].x, spline.points[0].y + ((spline.points[1].y - spline.points[0].y) / 2.0f), spline.points[0].z);

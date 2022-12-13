@@ -150,13 +150,14 @@ public class LadderState : MonoBehaviour
             _actionTimer -= Time.deltaTime;
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
-        if (_regrabTimer <= 0.0f && other.tag == "Ledge" && _pA.state != PlayerActor.State.ON_LEDGE && !_pA.isHoldingObject)
+        if (_regrabTimer <= 0.0f && other.tag == "Ladder" && _pA.state != PlayerActor.State.ON_LEDGE && !_pA.isHoldingObject)
         {
-            // setup current state and reset variables
 
-                _actionTimer = _actionTime;
+            Debug.Log("afsdsadfgasfdasgsdaf");
+            // setup current state and reset variables
+            _actionTimer = _actionTime;
                 _pA.isWalking = false;
                 _pA.state = PlayerActor.State.ON_LEDGE;
                 _curLedge = other;

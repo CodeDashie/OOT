@@ -92,6 +92,7 @@ public class PlayerActor : MonoBehaviour
         // attach and setup script components
         //GrabLedge grabLedge = _grabBox.AddComponent<GrabLedge>();
         gameObject.AddComponent<MovementJumpGravity>().SetValues(this);
+        _grabLedgeBox.AddComponent<LadderState>().SetValues(this);
         //_grabLedgeBox.AddComponent<GrabLedge>().SetValues(this);
         //_grabObjectBox.AddComponent<GrabObject>().SetValues(this);
         //gameObject.AddComponent<MoveObject>().SetValues(this);
