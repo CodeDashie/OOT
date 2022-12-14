@@ -154,8 +154,7 @@ public class LadderState : MonoBehaviour
     {
         if (_regrabTimer <= 0.0f && other.tag == "Ladder" && _pA.state != PlayerActor.State.ON_LEDGE && !_pA.isHoldingObject)
         {
-
-            Debug.Log("afsdsadfgasfdasgsdaf");
+            
             // setup current state and reset variables
             _actionTimer = _actionTime;
                 _pA.isWalking = false;
