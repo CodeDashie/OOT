@@ -10,23 +10,15 @@ public class MovementJumpGravity : MonoBehaviour
     const float PI = 3.14159265358979f;
     const float Rad2Deg = 180.0f / PI;
     const float Deg2Rad = PI / 180.0f;
-    static readonly string[] Anim = { "IsIdling", "IsWalking", "IsJumping", "IsFalling" };
+    static readonly string[] Anim = { "IsStrafing", "IsJumping", "IsFalling" };
+    bool isStrafing = true;
 
     public void SetValues(PlayerActor playerActor)
     {
         this._pA = playerActor;
+        _pA.anim.speed = 2.5f;
     }
-
-    void ResetAllBools(string s)
-    {
-        for (int i = 0; i < Anim.Length; i++)
-        {
-            Debug.Log("Check " + i);
-            if (Anim[i] != s)
-                _pA.anim.SetBool(Anim[i], false);
-        }
-    }
-
+    
     void FixedUpdate()
     {
         movement();
@@ -34,67 +26,86 @@ public class MovementJumpGravity : MonoBehaviour
 
     void movement()
     {
-        if (_pA.state == PlayerActor.State.WALKING)
-        {
-            Gamepad gamepad = Gamepad.current;
-            if (gamepad == null)
-            {
-                return;
-            }
-            // desired velocity
-            Vector2 v = new Vector2
-            (
-                Input.GetAxisRaw("Horizontal"),
-                Input.GetAxisRaw("Vertical")
-            );
+        Gamepad gamepad = Gamepad.current;
+        if (gamepad == null)
+            return;
+        
+        // desired velocity
+        Vector2 v = new Vector2
+        (
+            Input.GetAxisRaw("Horizontal"),
+            Input.GetAxisRaw("Vertical")
+        );
 
-            // animation speed based on magnitute of input axis
-            float mag = new Vector2(v.x, v.y).magnitude;
-            if (mag > 1.0f)
-                mag = 1.0f;
-            if (_pA.controller.isGrounded)
-            {
-                if (mag > 0.2f || _pA.anim.GetBool("IsWalking"))
-                    _pA.anim.speed = mag * 2.5f;
-                else if (_pA.anim.GetBool("IsIdling"))
-                    _pA.anim.speed = 1.8f;
-                else
-                    _pA.anim.speed = 0.5f;
-            }
-            else
-                _pA.anim.speed = 1.8f;
+        // animation speed based on magnitute of input axis
+        float mag = new Vector2(v.x, v.y).magnitude;
+        if (mag > 1.0f)
+            mag = 1.0f;
 
-            float tempX = v.x;
-            v.x = v.x * Mathf.Sqrt(1 - 0.5f * (v.y * v.y));
-            v.y = v.y * Mathf.Sqrt(1 - 0.5f * (tempX * tempX));
+        float tempX = v.x;
+        v.x = v.x * Mathf.Sqrt(1 - 0.5f * (v.y * v.y));
+        v.y = v.y * Mathf.Sqrt(1 - 0.5f * (tempX * tempX));
+
+
+        // gravity and jump
+        setJumpGravity();
+
+        // facing, move and animation if ordered to
+        if (!(v.x == 0.0f && v.y == 0.0f))
+            fixFacingAngleToCamera(ref v, mag);
             
-            
-            // facing, move and animation if ordered to
-            if (!(v.x == 0.0f && v.y == 0.0f))
-                fixFacingAngleToCamera(ref v, mag);
-            
-            // stop walk animation
-            else
-                setIdleAnimation();
-
-            // gravity and jump
-            setJumpGravity();
-
-            // move to new position
-            _pA.controller.Move(new Vector3(v.x, _pA.fallVelocity, v.y) * Time.deltaTime);
-        }
+        // move to new position
+        _pA.controller.Move(new Vector3(v.x, _pA.fallVelocity, v.y) * Time.deltaTime);
+    }
+    
+    void SetState(bool b)
+    {
+        _pA.anim.SetBool("Ground", !b);
+        _pA.anim.SetBool("Air", b);
+        isStrafing = !b;
     }
 
-    void setIdleAnimation()
+    void setJumpGravity()
     {
-        if (_pA.isWalking && _pA.controller.isGrounded)
+        // gravity
+        if (!_pA.controller.isGrounded)
+            _pA.fallVelocity += _pA.gravity;
+
+        // state
+        if (isStrafing)
         {
-            _pA.isWalking = false;
-            //_pA.anim.ResetTrigger("isWalking");
-            //ResetAllBools();
-            ResetAllBools("IsIdling");
-            //_pA.anim.SetBool("IsWalking", false);
-            _pA.anim.SetBool("IsIdling", true);
+            if (!_pA.controller.isGrounded)
+            {
+                // distance to ground
+                RaycastHit hit;
+                CharacterController charContr = _pA.controller;
+                Vector3 p1 = transform.position + charContr.center + Vector3.up * -charContr.height * 0.5F;
+                Vector3 p2 = p1 + Vector3.up * charContr.height;
+                float distanceToObstacle = 0;
+
+                // Cast character controller shape 10 meters forward to see if it is about to hit anything.
+                if (Physics.CapsuleCast(p1, p2, charContr.radius, new Vector3(0, -1, 0), out hit, 10))
+                    distanceToObstacle = hit.distance;
+
+                if (distanceToObstacle < 3.0f)
+                {
+                    SetState(true);
+                    return;
+                }
+            }
+            
+            // jump
+            if (isStrafing && Input.GetButton("Jump") && !_pA.isHoldingObject)
+            {
+                SetState(true);
+                _pA.fallVelocity = _pA.jumpVelocity;
+            }
+        }
+        // landed
+        else
+        {
+            _pA.fallVelocity = _pA.groundedGravity;
+            SetState(false);
         }
     }
 
@@ -104,27 +115,14 @@ public class MovementJumpGravity : MonoBehaviour
         float newFacing = (Rad2Deg * Mathf.Atan2(v.x, v.y)) +
                           _pA.camera.transform.eulerAngles.y;
         
+        if (isStrafing)
+        {
+            _pA.anim.SetFloat("Strafe", mag);
+        }
         // new walk position from newFacing
-        if (Input.GetButton("Sprint") && !_pA.isHoldingObject)
-        {
-            v.x = (_pA.runSpeed * mag) * Mathf.Sin(newFacing * Deg2Rad);
-            v.y = (_pA.runSpeed * mag) * Mathf.Cos(newFacing * Deg2Rad);
-        }
-        else
-        {
-            v.x = (_pA.walkSpeed * mag) * Mathf.Sin(newFacing * Deg2Rad);
-            v.y = (_pA.walkSpeed * mag) * Mathf.Cos(newFacing * Deg2Rad);
-        }
+        v.x = (_pA.runSpeed * mag) * Mathf.Sin(newFacing * Deg2Rad);
+        v.y = (_pA.runSpeed * mag) * Mathf.Cos(newFacing * Deg2Rad);
         // run walk animation
-        if (!_pA.isWalking && _pA.controller.isGrounded)
-        {
-            _pA.isWalking = true;
-            //_pA.anim.SetBool("IsIdling", false);
-            ResetAllBools("IsWalking");
-            //ResetAllBools();
-            _pA.anim.SetBool("IsWalking", true);
-            Debug.Log("IsWalking");
-        }
         setFacing(newFacing);
     }
 
@@ -165,81 +163,6 @@ public class MovementJumpGravity : MonoBehaviour
 
             if ((int)_pA.transform.eulerAngles.y != (int)curFacing)
                 _pA.transform.rotation = Quaternion.Euler(_pA.transform.eulerAngles.x, curFacing, _pA.transform.eulerAngles.z);
-        }
-    }
-
-    void setJumpGravity()
-    {
-        // jump
-        if (_pA.controller.isGrounded && Input.GetButton("Jump") && !_pA.isHoldingObject)
-        {
-            //ResetAllBools();
-            ResetAllBools("IsJumping");
-            _pA.anim.SetBool("IsJumping", true);
-            _pA.isJumping = true;
-            _pA.fallVelocity = _pA.jumpVelocity;
-            Debug.Log("jump");
-        }
-        // gravity
-        else if (!_pA.controller.isGrounded)
-        {
-            //ResetAllBools();
-            if (!_pA.isHoldingObject && _pA.fallVelocity < -10.0f && !_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Falling"))
-            {
-                ResetAllBools("IsFalling");
-                _pA.anim.SetBool("IsFalling", true);
-            }
-            _pA.fallVelocity += _pA.gravity;
-        }
-        // landed
-        else
-        {
-            //ResetAllBools();
-            //_pA.anim.ResetTrigger("isJumping");
-            //_pA.anim.ResetTrigger("isFalling");
-            _pA.fallVelocity = _pA.groundedGravity;
-            // landed, so end jump animation if it's still going
-
-            if (true)//(_pA.isJumping)
-            {
-                _pA.isJumping = false;
-                //Debug.Log("Land");
-                if (_pA.isWalking)
-                {
-                    ResetAllBools("IsWalking");
-                    _pA.anim.SetBool("IsWalking", true);
-                }
-                else
-                {
-                    ResetAllBools("IsIdling");
-                    _pA.anim.SetBool("IsIdling", true);
-                }
-            }
-            else if(_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Falling"))
-            {
-                if (_pA.isWalking)
-                {
-                    ResetAllBools("IsWalking");
-                    _pA.anim.SetBool("IsWalking", true);
-                }
-                else// if (!_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
-                {
-                    ResetAllBools("IsIdling");
-                    _pA.anim.SetBool("IsIdling", true);
-                }
-            }
-        }
-        
-        // at end of animation
-        if (_pA.isJumping && (_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Jump") || _pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Falling")) &&
-            _pA.anim.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1.0f)
-        {
-            //_pA.isJumping = false;
-            if (_pA.isWalking)
-                ;// _pA.anim.SetBool("isWalking", true);
-            else
-                ;// _pA.anim.SetBool("isIdling", true);
-
         }
     }
 }
