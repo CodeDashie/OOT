@@ -10,13 +10,19 @@ public class MovementJumpGravity : MonoBehaviour
     const float PI = 3.14159265358979f;
     const float Rad2Deg = 180.0f / PI;
     const float Deg2Rad = PI / 180.0f;
-    static readonly string[] Anim = { "IsStrafing", "IsJumping", "IsFalling" };
     bool isStrafing = true;
+    int MoveXAniParaId;
+    int MoveZAniParaId;
+
+    Vector2 CurrentAnimationBlendVector;
+    Vector2 AnimationVelocity;
 
     public void SetValues(PlayerActor playerActor)
     {
         this._pA = playerActor;
         _pA.anim.speed = 2.5f;
+        MoveXAniParaId = Animator.StringToHash("MoveX");
+        MoveZAniParaId = Animator.StringToHash("MoveZ");
     }
     
     void FixedUpdate()
@@ -53,15 +59,28 @@ public class MovementJumpGravity : MonoBehaviour
         // facing, move and animation if ordered to
         if (!(v.x == 0.0f && v.y == 0.0f))
             fixFacingAngleToCamera(ref v, mag);
-            
+
+        // animation speed
+        setAnimationSpeed(mag);
+
         // move to new position
         _pA.controller.Move(new Vector3(v.x, _pA.fallVelocity, v.y) * Time.deltaTime);
     }
     
     void SetState(bool b)
     {
-        _pA.anim.SetBool("Ground", !b);
-        _pA.anim.SetBool("Air", b);
+        if (b)
+            Debug.Log("true");
+        else
+            Debug.Log("false");
+        _pA.anim.SetBool("IsGround", !b);
+        _pA.anim.SetBool("IsAir", b);
+        isStrafing = !b;
+    }
+
+    void Transition(bool b, string s)
+    {
+        _pA.anim.CrossFade(s, 0.35f);
         isStrafing = !b;
     }
 
@@ -79,33 +98,32 @@ public class MovementJumpGravity : MonoBehaviour
                 // distance to ground
                 RaycastHit hit;
                 CharacterController charContr = _pA.controller;
-                Vector3 p1 = transform.position + charContr.center + Vector3.up * -charContr.height * 0.5F;
+                Vector3 p1 = transform.position + charContr.center + Vector3.up * -charContr.height * 0.4F;
                 Vector3 p2 = p1 + Vector3.up * charContr.height;
-                float distanceToObstacle = 0;
+                //float distanceToObstacle = 0;
 
                 // Cast character controller shape 10 meters forward to see if it is about to hit anything.
-                if (Physics.CapsuleCast(p1, p2, charContr.radius, new Vector3(0, -1, 0), out hit, 10))
-                    distanceToObstacle = hit.distance;
-
-                if (distanceToObstacle < 3.0f)
-                {
-                    SetState(true);
-                    return;
-                }
+                if (Physics.CapsuleCast(p1, p2, charContr.radius, new Vector3(0, -1, 0), out hit, 10)
+                    && hit.distance < 2.0f)
+                        return;
+                
+                Transition(true, "Air");
+                return;
             }
             
             // jump
             if (isStrafing && Input.GetButton("Jump") && !_pA.isHoldingObject)
             {
-                SetState(true);
+                Transition(true, "Air");
                 _pA.fallVelocity = _pA.jumpVelocity;
             }
         }
         // landed
-        else
+        else if (_pA.controller.isGrounded)
         {
+            Debug.Log("isGrounded");
             _pA.fallVelocity = _pA.groundedGravity;
-            SetState(false);
+            Transition(false, "Strafe");
         }
     }
 
@@ -116,13 +134,12 @@ public class MovementJumpGravity : MonoBehaviour
                           _pA.camera.transform.eulerAngles.y;
         
         if (isStrafing)
-        {
             _pA.anim.SetFloat("Strafe", mag);
-        }
+        
         // new walk position from newFacing
         v.x = (_pA.runSpeed * mag) * Mathf.Sin(newFacing * Deg2Rad);
         v.y = (_pA.runSpeed * mag) * Mathf.Cos(newFacing * Deg2Rad);
-        // run walk animation
+        // set new facing
         setFacing(newFacing);
     }
 
@@ -164,5 +181,13 @@ public class MovementJumpGravity : MonoBehaviour
             if ((int)_pA.transform.eulerAngles.y != (int)curFacing)
                 _pA.transform.rotation = Quaternion.Euler(_pA.transform.eulerAngles.x, curFacing, _pA.transform.eulerAngles.z);
         }
+    }
+
+    void setAnimationSpeed(float mag)
+    {
+        //if (isStrafing)
+            _pA.anim.SetFloat(MoveZAniParaId, mag);
+        //else
+            //;
     }
 }
