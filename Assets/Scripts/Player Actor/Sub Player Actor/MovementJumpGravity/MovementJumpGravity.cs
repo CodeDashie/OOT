@@ -20,7 +20,7 @@ public class MovementJumpGravity : MonoBehaviour
     public void SetValues(PlayerActor playerActor)
     {
         this._pA = playerActor;
-        _pA.anim.speed = 2.5f;
+        _pA.anim.speed = 3.5f;
         MoveXAniParaId = Animator.StringToHash("MoveX");
         MoveZAniParaId = Animator.StringToHash("MoveZ");
     }
