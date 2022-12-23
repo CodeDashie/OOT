@@ -13,16 +13,30 @@ public class MovementJumpGravity : MonoBehaviour
     bool isStrafing = true;
     int MoveXAniParaId;
     int MoveZAniParaId;
-
     Vector2 CurrentAnimationBlendVector;
     Vector2 AnimationVelocity;
+    GameObject Shield;
 
+    GameObject GetChildWithName(GameObject obj, string name)
+    {
+        Transform trans = obj.transform;
+        Transform childTrans = trans.Find(name);
+        if (childTrans != null)
+        {
+            return childTrans.gameObject;
+        }
+        else
+        {
+            return null;
+        }
+    }
     public void SetValues(PlayerActor playerActor)
     {
         this._pA = playerActor;
         _pA.anim.speed = 3.5f;
         MoveXAniParaId = Animator.StringToHash("MoveX");
         MoveZAniParaId = Animator.StringToHash("MoveZ");
+        Shield = GetChildWithName(this.gameObject, "Shield");
     }
     
     void FixedUpdate()
@@ -69,10 +83,6 @@ public class MovementJumpGravity : MonoBehaviour
     
     void SetState(bool b)
     {
-        if (b)
-            Debug.Log("true");
-        else
-            Debug.Log("false");
         _pA.anim.SetBool("IsGround", !b);
         _pA.anim.SetBool("IsAir", b);
         isStrafing = !b;
@@ -112,10 +122,17 @@ public class MovementJumpGravity : MonoBehaviour
             }
             
             // jump
-            if (isStrafing && Input.GetButton("Jump") && !_pA.isHoldingObject)
+            if (isStrafing && !_pA.isHoldingObject)
             {
-                Transition(true, "Air");
-                _pA.fallVelocity = _pA.jumpVelocity;
+                if (Input.GetButton("Jump"))
+                {
+                    Transition(true, "Air");
+                    _pA.fallVelocity = _pA.jumpVelocity;
+                }
+                else if (Input.GetButton("Shield"))
+                {
+
+                }
             }
         }
         // landed

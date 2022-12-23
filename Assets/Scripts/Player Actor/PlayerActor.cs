@@ -44,6 +44,9 @@ public class PlayerActor : MonoBehaviour
     // state
     public bool isWalking       { get; set; } = false;
     public bool isJumping       { get; set; } = false;
+    public bool isStrafe        { get; set; } = false;
+    public bool isStrafeShield  { get; set; } = false;
+    public bool isCrouch        { get; set; } = false;
     public bool isOnLedge       { get; set; } = false;
     public bool isClimbing      { get; set; } = false;
     public bool isHoldingObject { get; set; } = false;
