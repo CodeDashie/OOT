@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Animations.Rigging;
 
 public class MovementJumpGravity : MonoBehaviour
 {
@@ -15,28 +16,13 @@ public class MovementJumpGravity : MonoBehaviour
     int MoveZAniParaId;
     Vector2 CurrentAnimationBlendVector;
     Vector2 AnimationVelocity;
-    GameObject Shield;
 
-    GameObject GetChildWithName(GameObject obj, string name)
-    {
-        Transform trans = obj.transform;
-        Transform childTrans = trans.Find(name);
-        if (childTrans != null)
-        {
-            return childTrans.gameObject;
-        }
-        else
-        {
-            return null;
-        }
-    }
     public void SetValues(PlayerActor playerActor)
     {
         this._pA = playerActor;
         _pA.anim.speed = 3.5f;
         MoveXAniParaId = Animator.StringToHash("MoveX");
         MoveZAniParaId = Animator.StringToHash("MoveZ");
-        Shield = GetChildWithName(this.gameObject, "Shield");
     }
     
     void FixedUpdate()
@@ -131,7 +117,16 @@ public class MovementJumpGravity : MonoBehaviour
                 }
                 else if (Input.GetButton("Shield"))
                 {
-
+                    Debug.Log("Shield");
+                    _pA.Shield.SetActive(true);
+                    _pA.HandRig.weight = 1.0f;
+                    _pA.AngleRig.weight = 1.0f;
+                }
+                else
+                {
+                    _pA.Shield.SetActive(false);
+                    _pA.HandRig.weight = 0.0f;
+                    _pA.AngleRig.weight = 0.0f;
                 }
             }
         }

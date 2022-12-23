@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 public class PlayerActor : MonoBehaviour
 {
     // --
@@ -60,6 +61,9 @@ public class PlayerActor : MonoBehaviour
     private GameObject _grabLedgeBox;
     [SerializeField]
     private GameObject _grabObjectBox;
+    public GameObject Shield;
+    public Rig HandRig;
+    public Rig AngleRig;
 
     public float energy;
     public int minimumRespawnEnergy;

@@ -766,7 +766,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 232205334}
-  m_LocalRotation: {x: 0.08341539, y: -0.277888, z: 0.024229813, w: 0.9566782}
+  m_LocalRotation: {x: 0.08341538, y: -0.27788803, z: 0.024229813, w: 0.9566782}
   m_LocalPosition: {x: -0.0000019073486, y: 0, z: -0.0000019073486}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -1482,6 +1482,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 515560510}
+  - component: {fileID: 515560511}
   m_Layer: 0
   m_Name: LeftHandIK
   m_TagString: Untagged
@@ -1503,6 +1504,32 @@ Transform:
   m_Father: {fileID: 1937928957}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &515560511
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 515560509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeda7bfbf984f2a4da5ab4b8967b115d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Weight: 1
+  m_Data:
+    m_Root: {fileID: 0}
+    m_Mid: {fileID: 0}
+    m_Tip: {fileID: 0}
+    m_Target: {fileID: 0}
+    m_Hint: {fileID: 0}
+    m_TargetPositionWeight: 1
+    m_TargetRotationWeight: 1
+    m_HintWeight: 1
+    m_MaintainTargetPositionOffset: 0
+    m_MaintainTargetRotationOffset: 0
+  m_SourceObjectsGUIToggle: 1
+  m_SettingsGUIToggle: 0
 --- !u!1 &524558055
 GameObject:
   m_ObjectHideFlags: 0
@@ -1820,7 +1847,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 817368469}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.11, y: 2.88, z: 2.34}
+  m_LocalPosition: {x: 1.69, y: 3.98, z: 2.34}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1222827695}
@@ -2006,7 +2033,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 893137383}
-  m_LocalRotation: {x: 0.115360305, y: -3.189496e-10, z: -3.7129584e-11, w: 0.99332374}
+  m_LocalRotation: {x: 0.115360305, y: 3.1895844e-10, z: 3.707899e-11, w: 0.99332374}
   m_LocalPosition: {x: 15.33, y: 8.889999, z: -35.78}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -2364,10 +2391,6 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: b6870530e63131b4b80eeec84d442dbe, type: 3}
       propertyPath: m_Name
       value: Young Link
-      objectReference: {fileID: 0}
-    - target: {fileID: 1427564092133216371, guid: b6870530e63131b4b80eeec84d442dbe, type: 3}
-      propertyPath: m_Name
-      value: Shield
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: b6870530e63131b4b80eeec84d442dbe, type: 3}
       propertyPath: m_Avatar
@@ -2989,7 +3012,7 @@ GameObject:
   - component: {fileID: 1349425520}
   - component: {fileID: 1349425521}
   m_Layer: 0
-  m_Name: Weapon
+  m_Name: Shield
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3248,6 +3271,9 @@ MonoBehaviour:
   head: {fileID: 0}
   _grabLedgeBox: {fileID: 280274383}
   _grabObjectBox: {fileID: 1410077457}
+  Shield: {fileID: 0}
+  HandRig: {fileID: 0}
+  AngleRig: {fileID: 0}
   energy: 0
   minimumRespawnEnergy: 0
   standardEnergyMultiplier: 0
@@ -4662,6 +4688,9 @@ MonoBehaviour:
   head: {fileID: 1647386057354592938}
   _grabLedgeBox: {fileID: 2137198302}
   _grabObjectBox: {fileID: 524558055}
+  Shield: {fileID: 1349425519}
+  HandRig: {fileID: 1937928956}
+  AngleRig: {fileID: 1222827694}
   energy: 0
   minimumRespawnEnergy: 0
   standardEnergyMultiplier: 0
