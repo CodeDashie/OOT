@@ -115,9 +115,11 @@ public class MovementJumpGravity : MonoBehaviour
                     Transition(true, "Air");
                     _pA.fallVelocity = _pA.jumpVelocity;
                 }
-                else if (Input.GetButton("Shield"))
+                if (Input.GetButton("Shield") || Input.GetButton("Crouch"))
                 {
                     Debug.Log("Shield");
+                    if (Input.GetButton("Crouch"))
+                        _pA.anim.CrossFade("Crouch", 0.0f);
                     _pA.Shield.SetActive(true);
                     _pA.HandRig.weight = 1.0f;
                     _pA.AngleRig.weight = 1.0f;
@@ -128,6 +130,8 @@ public class MovementJumpGravity : MonoBehaviour
                     _pA.HandRig.weight = 0.0f;
                     _pA.AngleRig.weight = 0.0f;
                 }
+                if (Input.GetButtonUp("Crouch"))
+                    _pA.anim.CrossFade("Strafe", 0.0f);
             }
         }
         // landed
@@ -137,6 +141,8 @@ public class MovementJumpGravity : MonoBehaviour
             _pA.fallVelocity = _pA.groundedGravity;
             Transition(false, "Strafe");
         }
+        else if (Input.GetButtonUp("Crouch"))
+            _pA.anim.CrossFade("Air", 0.0f);
     }
 
     void fixFacingAngleToCamera(ref Vector2 v, float mag)
