@@ -23,11 +23,20 @@ public class MovementJumpGravity : MonoBehaviour
         _pA.anim.speed = 3.5f;
         MoveXAniParaId = Animator.StringToHash("MoveX");
         MoveZAniParaId = Animator.StringToHash("MoveZ");
+        
+        _pA.HandRig.weight = 0.0f;
+        _pA.AngleRig.weight = 0.0f;
+        _pA.Shield.SetActive(false);
     }
     
     void FixedUpdate()
     {
         movement();
+    }
+
+    private void Update()
+    {
+        setJumpGravity();
     }
 
     void movement()
@@ -53,8 +62,10 @@ public class MovementJumpGravity : MonoBehaviour
         v.y = v.y * Mathf.Sqrt(1 - 0.5f * (tempX * tempX));
 
 
-        // gravity and jump
-        setJumpGravity();
+        // gravity and jump velocity
+        if (!_pA.controller.isGrounded)
+            _pA.fallVelocity += _pA.gravity;
+
 
         // facing, move and animation if ordered to
         if (!(v.x == 0.0f && v.y == 0.0f))
@@ -67,82 +78,10 @@ public class MovementJumpGravity : MonoBehaviour
         _pA.controller.Move(new Vector3(v.x, _pA.fallVelocity, v.y) * Time.deltaTime);
     }
     
-    void SetState(bool b)
-    {
-        _pA.anim.SetBool("IsGround", !b);
-        _pA.anim.SetBool("IsAir", b);
-        isStrafing = !b;
-    }
-
     void Transition(bool b, string s)
     {
-        _pA.anim.CrossFade(s, 0.35f);
+        _pA.anim.CrossFade(s, 0.35f, 0, 0.0f, 0.0f);
         isStrafing = !b;
-    }
-
-    void setJumpGravity()
-    {
-        // gravity
-        if (!_pA.controller.isGrounded)
-            _pA.fallVelocity += _pA.gravity;
-
-        // state
-        if (isStrafing)
-        {
-            if (!_pA.controller.isGrounded)
-            {
-                // distance to ground
-                RaycastHit hit;
-                CharacterController charContr = _pA.controller;
-                Vector3 p1 = transform.position + charContr.center + Vector3.up * -charContr.height * 0.4F;
-                Vector3 p2 = p1 + Vector3.up * charContr.height;
-                //float distanceToObstacle = 0;
-
-                // Cast character controller shape 10 meters forward to see if it is about to hit anything.
-                if (Physics.CapsuleCast(p1, p2, charContr.radius, new Vector3(0, -1, 0), out hit, 10)
-                    && hit.distance < 2.0f)
-                        return;
-                
-                Transition(true, "Air");
-                return;
-            }
-            
-            // jump
-            if (isStrafing && !_pA.isHoldingObject)
-            {
-                if (Input.GetButton("Jump"))
-                {
-                    Transition(true, "Air");
-                    _pA.fallVelocity = _pA.jumpVelocity;
-                }
-                if (Input.GetButton("Shield") || Input.GetButton("Crouch"))
-                {
-                    Debug.Log("Shield");
-                    if (Input.GetButton("Crouch"))
-                        _pA.anim.CrossFade("Crouch", 0.0f);
-                    _pA.Shield.SetActive(true);
-                    _pA.HandRig.weight = 1.0f;
-                    _pA.AngleRig.weight = 1.0f;
-                }
-                else
-                {
-                    _pA.Shield.SetActive(false);
-                    _pA.HandRig.weight = 0.0f;
-                    _pA.AngleRig.weight = 0.0f;
-                }
-                if (Input.GetButtonUp("Crouch"))
-                    _pA.anim.CrossFade("Strafe", 0.0f);
-            }
-        }
-        // landed
-        else if (_pA.controller.isGrounded)
-        {
-            Debug.Log("isGrounded");
-            _pA.fallVelocity = _pA.groundedGravity;
-            Transition(false, "Strafe");
-        }
-        else if (Input.GetButtonUp("Crouch"))
-            _pA.anim.CrossFade("Air", 0.0f);
     }
 
     void fixFacingAngleToCamera(ref Vector2 v, float mag)
@@ -150,10 +89,10 @@ public class MovementJumpGravity : MonoBehaviour
         // facing from desired direction with camera angle in mind
         float newFacing = (Rad2Deg * Mathf.Atan2(v.x, v.y)) +
                           _pA.camera.transform.eulerAngles.y;
-        
+
         if (isStrafing)
             _pA.anim.SetFloat("Strafe", mag);
-        
+
         // new walk position from newFacing
         v.x = (_pA.runSpeed * mag) * Mathf.Sin(newFacing * Deg2Rad);
         v.y = (_pA.runSpeed * mag) * Mathf.Cos(newFacing * Deg2Rad);
@@ -180,7 +119,7 @@ public class MovementJumpGravity : MonoBehaviour
             if ((curFacing <= newFacing && curFacing + velocity >= newFacing) ||
                 (curFacing >= newFacing && curFacing - velocity <= newFacing))
                 curFacing = newFacing;
-            
+
             else if (newFacing < 180)
             {
                 if (curFacing > newFacing && curFacing < newFacing + 180)
@@ -204,8 +143,69 @@ public class MovementJumpGravity : MonoBehaviour
     void setAnimationSpeed(float mag)
     {
         //if (isStrafing)
-            _pA.anim.SetFloat(MoveZAniParaId, mag);
+        _pA.anim.SetFloat(MoveZAniParaId, mag);
         //else
-            //;
+        //;
+    }
+
+    void setJumpGravity()
+    {
+        // state
+        if (isStrafing)
+        {
+            if (!_pA.controller.isGrounded)
+            {
+                // distance to ground
+                RaycastHit hit;
+                CharacterController charContr = _pA.controller;
+                Vector3 p1 = (transform.position + new Vector3(0, 1, 0)) + charContr.center + Vector3.up * -charContr.height * 0.4F;
+                Vector3 p2 = p1 + Vector3.up * charContr.height;
+
+                // Cast character controller shape 10 meters forward to see if it is about to hit anything.
+                if (Physics.CapsuleCast(p1, p2, charContr.radius, new Vector3(0, -1, 0), out hit, 10))
+                    if (hit.distance < 3.0f)
+                        return;
+                
+                Transition(true, "Air");
+                return;
+            }
+            
+            // jump
+            if (isStrafing && !_pA.isHoldingObject)
+            {
+                if (Input.GetButton("Jump"))
+                {
+                    Transition(true, "Air");
+                    _pA.fallVelocity = _pA.jumpVelocity;
+                }
+            }
+        }
+        // landed
+        else if (_pA.controller.isGrounded)
+        {
+            _pA.fallVelocity = _pA.groundedGravity;
+            Transition(false, "Strafe");
+        }
+        else if (Input.GetButtonUp("Crouch"))
+            _pA.anim.CrossFade("Air", 0.0f, 0, 0.0f, 0.0f);
+
+        // shield stuff
+        if (Input.GetButtonDown("Shield") || Input.GetButtonDown("Crouch"))
+        {
+            _pA.Shield.SetActive(true);
+            _pA.HandRig.weight = 1.0f;
+            _pA.AngleRig.weight = 1.0f;
+            if (Input.GetButtonDown("Crouch"))
+                _pA.anim.CrossFade("Crouch", 0.0f, 0, 0.0f, 0.0f);
+
+        }
+        else if (Input.GetButtonUp("Shield") || Input.GetButtonUp("Crouch"))
+        {
+            _pA.HandRig.weight = 0.0f;
+            _pA.AngleRig.weight = 0.0f;
+            _pA.Shield.SetActive(false);
+            if (Input.GetButtonUp("Crouch"))
+                _pA.anim.CrossFade("Strafe", 0.0f, 0, 0.0f, 0.0f);
+        }
     }
 }
