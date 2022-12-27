@@ -27,6 +27,7 @@ public class MovementJumpGravity : MonoBehaviour
         _pA.HandRig.weight = 0.0f;
         _pA.AngleRig.weight = 0.0f;
         _pA.Shield.SetActive(false);
+        _pA.isCrouch = false;
     }
     
     void FixedUpdate()
@@ -42,7 +43,7 @@ public class MovementJumpGravity : MonoBehaviour
     void movement()
     {
         Gamepad gamepad = Gamepad.current;
-        if (gamepad == null)
+        if (gamepad == null || _pA.isCrouch)
             return;
         
         // desired velocity
@@ -150,62 +151,75 @@ public class MovementJumpGravity : MonoBehaviour
 
     void setJumpGravity()
     {
-        // state
-        if (isStrafing)
-        {
-            if (!_pA.controller.isGrounded)
+        if (!_pA.isCrouch)
+        {// state
+            if (isStrafing)
             {
-                // distance to ground
-                RaycastHit hit;
-                CharacterController charContr = _pA.controller;
-                Vector3 p1 = (transform.position + new Vector3(0, 1, 0)) + charContr.center + Vector3.up * -charContr.height * 0.4F;
-                Vector3 p2 = p1 + Vector3.up * charContr.height;
-
-                // Cast character controller shape 10 meters forward to see if it is about to hit anything.
-                if (Physics.CapsuleCast(p1, p2, charContr.radius, new Vector3(0, -1, 0), out hit, 10))
-                    if (hit.distance < 3.0f)
-                        return;
-                
-                Transition(true, "Air");
-                return;
-            }
-            
-            // jump
-            if (isStrafing && !_pA.isHoldingObject)
-            {
-                if (Input.GetButton("Jump"))
+                if (!_pA.controller.isGrounded)
                 {
+                    // distance to ground
+                    RaycastHit hit;
+                    CharacterController charContr = _pA.controller;
+                    Vector3 p1 = (transform.position + new Vector3(0, 1, 0)) + charContr.center + Vector3.up * -charContr.height * 0.4F;
+                    Vector3 p2 = p1 + Vector3.up * charContr.height;
+
+                    // Cast character controller shape 10 meters forward to see if it is about to hit anything.
+                    if (Physics.CapsuleCast(p1, p2, charContr.radius, new Vector3(0, -1, 0), out hit, 10))
+                        if (hit.distance < 3.0f)
+                            return;
+
                     Transition(true, "Air");
-                    _pA.fallVelocity = _pA.jumpVelocity;
+                    return;
+                }
+
+                // jump
+                if (isStrafing && !_pA.isHoldingObject)
+                {
+                    if (Input.GetButton("Jump"))
+                    {
+                        Transition(true, "Air");
+                        _pA.fallVelocity = _pA.jumpVelocity;
+                    }
                 }
             }
-        }
-        // landed
-        else if (_pA.controller.isGrounded)
-        {
-            _pA.fallVelocity = _pA.groundedGravity;
-            Transition(false, "Strafe");
-        }
-        else if (Input.GetButtonUp("Crouch"))
-            _pA.anim.CrossFade("Air", 0.0f, 0, 0.0f, 0.0f);
 
+            // landed
+            else if (_pA.controller.isGrounded)
+            {
+                _pA.fallVelocity = _pA.groundedGravity;
+                Transition(false, "Strafe");
+            }
+            else if (Input.GetButtonUp("Crouch"))
+                _pA.anim.CrossFade("Air", 0.0f, 0, 0.0f, 0.0f);
+        }
         // shield stuff
         if (Input.GetButtonDown("Shield") || Input.GetButtonDown("Crouch"))
         {
-            _pA.Shield.SetActive(true);
-            _pA.HandRig.weight = 1.0f;
-            _pA.AngleRig.weight = 1.0f;
+            if (!(Input.GetButton("Shield") && Input.GetButton("Crouch")))
+            {
+                _pA.Shield.SetActive(true);
+                _pA.HandRig.weight = 1.0f;
+                _pA.AngleRig.weight = 1.0f;
+            }
             if (Input.GetButtonDown("Crouch"))
+            {
                 _pA.anim.CrossFade("Crouch", 0.0f, 0, 0.0f, 0.0f);
-
+                _pA.isCrouch = true;
+            }
         }
         else if (Input.GetButtonUp("Shield") || Input.GetButtonUp("Crouch"))
         {
-            _pA.HandRig.weight = 0.0f;
-            _pA.AngleRig.weight = 0.0f;
-            _pA.Shield.SetActive(false);
+            if (!Input.GetButton("Shield") && !Input.GetButton("Crouch"))
+            {
+                _pA.HandRig.weight = 0.0f;
+                _pA.AngleRig.weight = 0.0f;
+                _pA.Shield.SetActive(false);
+            }
             if (Input.GetButtonUp("Crouch"))
+            {
                 _pA.anim.CrossFade("Strafe", 0.0f, 0, 0.0f, 0.0f);
+                _pA.isCrouch = false;
+            }
         }
     }
 }
