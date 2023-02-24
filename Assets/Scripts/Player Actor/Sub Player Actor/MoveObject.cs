@@ -66,7 +66,7 @@ public class MoveObject : MonoBehaviour
 
     void OnCharacterCollideObject(ControllerColliderHit hit)
     {
-        if (_pA.state == PlayerActor.State.WALKING && hit.transform.tag == "ObjectPushable")
+        if (_pA.stateIndex == PlayerActor.StateIndex.WALKING && hit.transform.tag == "ObjectPushable")
         {
             foreach (Object o in _colObject)
                 if (hit.collider == o._object)
@@ -137,7 +137,7 @@ public class MoveObject : MonoBehaviour
 
     void GrabInput()
     {
-        if (_pA.state == PlayerActor.State.WALKING)
+        if (_pA.stateIndex == PlayerActor.StateIndex.WALKING)
         {
             // setup for object list check removal
             List<Object> colObjectRemove = new List<Object>();
@@ -170,7 +170,7 @@ public class MoveObject : MonoBehaviour
                 if (Input.GetButtonDown("Fire1"))
                 {
                     // is now in pushing object state
-                    _pA.state = PlayerActor.State.PUSHING_OBJECT;
+                    _pA.stateIndex = PlayerActor.StateIndex.PUSHING_OBJECT;
                     // reset animation and set animation to grab
                     ResetAllTriggers();
                     _pA.anim.SetTrigger("isGrabIdle");
@@ -202,7 +202,7 @@ public class MoveObject : MonoBehaviour
 
     void PushPullInput()
     {
-        if (_pA.state == PlayerActor.State.PUSHING_OBJECT)
+        if (_pA.stateIndex == PlayerActor.StateIndex.PUSHING_OBJECT)
         {
             // if colliding and press button for push and pull state
             float yDif = _pA.transform.position.y - _curObject.transform.position.y;
@@ -210,7 +210,7 @@ public class MoveObject : MonoBehaviour
             if (Input.GetButtonDown("Fire1") || (yDif > _curObject.transform.localScale.y || -yDif > _pA.controller.height))
             {
                 // is now in walking state
-                _pA.state = PlayerActor.State.WALKING;
+                _pA.stateIndex = PlayerActor.StateIndex.WALKING;
                 ResetAllTriggers();
                 _pA.anim.SetTrigger("isIdling");
                 _curObject.attachedRigidbody.velocity = new Vector3();
@@ -282,7 +282,7 @@ public class MoveObject : MonoBehaviour
     
     void SetGravity()
     {
-        if (_pA.state == PlayerActor.State.PUSHING_OBJECT)
+        if (_pA.stateIndex == PlayerActor.StateIndex.PUSHING_OBJECT)
         {
             // gravity
             if (!_pA.controller.isGrounded)

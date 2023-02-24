@@ -6,8 +6,10 @@ namespace SplineAI
 {
     public class Ladder : MonoBehaviour
     {
+        private const float width = 1.2f;
         UISpline spline;
         public float angle;
+        public MeshCollider ladderCollider;
         new BoxCollider collider;
         GameObject colliderObject;
         
@@ -25,7 +27,7 @@ namespace SplineAI
             collider = colliderObject.AddComponent<BoxCollider>();
             colliderObject.AddComponent<Rigidbody>().useGravity = false;
             collider.isTrigger = true;
-            collider.size = new Vector3(3.0f, spline.points[1].y - spline.points[0].y, 0.01f);
+            collider.size = new Vector3(width, spline.points[1].y - spline.points[0].y, 0.01f);
             //collider.center = new Vector3(spline.points[0].x, spline.points[0].y + ((spline.points[1].y - spline.points[0].y) / 2.0f), spline.points[0].z);
             //collider.
         }

@@ -6,6 +6,7 @@ namespace SplineAI
 {
     public class UISpline : MonoBehaviour
     {
+        private const float ladderWidth = 1.2f;
         public Vector3[] points;
 
         public void Start()
@@ -73,6 +74,7 @@ namespace SplineAI
             Ladder ladder = GetComponent<Ladder>();
             if (ladder != null)
             {
+                Vector3 position = transform.parent.transform.position + offsetPos(points[0]);
                 Quaternion rotation = Quaternion.Euler(0, ladder.angle, 0);
                 Matrix4x4 trs = Matrix4x4.TRS(transform.parent.transform.position + offsetPos(points[0]), rotation, Vector3.one);
                 Gizmos.matrix = trs;
@@ -80,8 +82,14 @@ namespace SplineAI
                 color.a = 125;
                 Gizmos.color = color;
                 float diff = points[1].y - points[0].y;
-                Gizmos.DrawCube(new Vector3(0.0f, diff / 2.0f, 0.0f), new Vector3(3.0f, diff, 0.0001f));
+                Gizmos.DrawCube(new Vector3(0.0f, diff / 2.0f, 0.0f), new Vector3(ladderWidth, diff, 0.0001f));
                 Gizmos.matrix = Matrix4x4.identity;
+
+                trs = Matrix4x4.TRS(transform.parent.transform.position + offsetPos(points[0]), rotation, Vector3.one);
+                Gizmos.matrix = trs;
+                Gizmos.DrawCube(new Vector3(0.0f, points[0].y, ladderWidth * Mathf.Sin(ladder.angle)), new Vector3(ladderWidth, ladderWidth, ladderWidth));
+                
+                Gizmos.DrawCube(new Vector3(0.0f, points[1].y, -ladderWidth * Mathf.Sin(ladder.angle)), new Vector3(ladderWidth, ladderWidth, ladderWidth));
                 Gizmos.color = Color.white;
             }
         }

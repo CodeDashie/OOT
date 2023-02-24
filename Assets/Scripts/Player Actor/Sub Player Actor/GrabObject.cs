@@ -71,7 +71,7 @@ public class GrabObject : MonoBehaviour
     private void OnTriggerStay(Collider other)
     {
         if (Input.GetButtonDown("Fire1"))
-            if (_regrabTimer <= 0.0f && other.tag == "Object" && _pA.state != PlayerActor.State.ON_LEDGE && !_pA.isHoldingObject)
+            if (_regrabTimer <= 0.0f && other.tag == "Object" && _pA.stateIndex != PlayerActor.StateIndex.ON_LEDGE && !_pA.isHoldingObject)
             {
                 _canDrop = false;
                 _isKinematic = other.attachedRigidbody.isKinematic;

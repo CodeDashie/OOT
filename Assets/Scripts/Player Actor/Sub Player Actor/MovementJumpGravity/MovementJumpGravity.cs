@@ -4,20 +4,13 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Animations.Rigging;
 
-public class MovementJumpGravity : MonoBehaviour
+public class MovementJumpGravity : State
 {
-    private PlayerActor _pA;
-
-    const float PI = 3.14159265358979f;
-    const float Rad2Deg = 180.0f / PI;
-    const float Deg2Rad = PI / 180.0f;
     bool isStrafing = true;
     int MoveXAniParaId;
     int MoveZAniParaId;
-    Vector2 CurrentAnimationBlendVector;
-    Vector2 AnimationVelocity;
 
-    public void SetValues(PlayerActor playerActor)
+    public override void SetValues(PlayerActor playerActor)
     {
         this._pA = playerActor;
         _pA.anim.speed = 3.5f;
@@ -29,15 +22,43 @@ public class MovementJumpGravity : MonoBehaviour
         _pA.Shield.SetActive(false);
         _pA.isCrouch = false;
     }
-    
+
+    public override void Activate()
+    {
+        Debug.Log("Activate Move");
+        _pA.stateIndex = PlayerActor.StateIndex.WALKING;
+        isActive = true;
+        setAnimationSpeed(1.0f);
+        _pA.anim.speed = 3.5f;
+        if (_pA.controller.isGrounded)
+            Transition(false, "Strafe");
+
+    }
+
+    public override void Deactivate()
+    {
+        Debug.Log("Deactivate Move");
+        isActive = false;
+
+        _pA.HandRig.weight = 0.0f;
+        _pA.AngleRig.weight = 0.0f;
+        _pA.Shield.SetActive(false);
+        //_pA.isCrouch = false;
+        //_pA.isWalking = false;
+        //setAnimationSpeed(0.0f);
+        _pA.anim.speed = 0.0f;
+    }
+
     void FixedUpdate()
     {
-        movement();
+        if (isActive)
+            movement();
     }
 
     private void Update()
     {
-        setJumpGravity();
+        if (isActive)
+            setJumpGravity();
     }
 
     void movement()
@@ -73,7 +94,21 @@ public class MovementJumpGravity : MonoBehaviour
             fixFacingAngleToCamera(ref v, mag);
 
         // animation speed
-        setAnimationSpeed(mag);
+        if (mag < 0.05f)
+        {
+            setAnimationSpeed(0.0f);
+            _pA.anim.SetFloat("animSpeed", 1.0f);
+        }
+        else if (mag < 0.7f)
+        {
+            setAnimationSpeed(0.5f);
+            _pA.anim.SetFloat("animSpeed", mag);
+        }
+        else
+        {
+            setAnimationSpeed(1.0f);
+            _pA.anim.SetFloat("animSpeed", mag);
+        }
 
         // move to new position
         _pA.controller.Move(new Vector3(v.x, _pA.fallVelocity, v.y) * Time.deltaTime);
@@ -88,15 +123,15 @@ public class MovementJumpGravity : MonoBehaviour
     void fixFacingAngleToCamera(ref Vector2 v, float mag)
     {
         // facing from desired direction with camera angle in mind
-        float newFacing = (Rad2Deg * Mathf.Atan2(v.x, v.y)) +
+        float newFacing = (Maths.Rad2Deg * Mathf.Atan2(v.x, v.y)) +
                           _pA.camera.transform.eulerAngles.y;
 
         if (isStrafing)
             _pA.anim.SetFloat("Strafe", mag);
 
         // new walk position from newFacing
-        v.x = (_pA.runSpeed * mag) * Mathf.Sin(newFacing * Deg2Rad);
-        v.y = (_pA.runSpeed * mag) * Mathf.Cos(newFacing * Deg2Rad);
+        v.x = (_pA.runSpeed * mag) * Mathf.Sin(newFacing * Maths.Deg2Rad);
+        v.y = (_pA.runSpeed * mag) * Mathf.Cos(newFacing * Maths.Deg2Rad);
         // set new facing
         setFacing(newFacing);
     }
@@ -173,14 +208,9 @@ public class MovementJumpGravity : MonoBehaviour
                 }
 
                 // jump
-                if (isStrafing && !_pA.isHoldingObject)
-                {
-                    if (Input.GetButton("Jump"))
-                    {
-                        Transition(true, "Air");
-                        _pA.fallVelocity = _pA.jumpVelocity;
-                    }
-                }
+                if (Input.GetButton("Jump"))
+                    if (isStrafing && !_pA.isHoldingObject)
+                        jump();
             }
 
             // landed
@@ -195,7 +225,7 @@ public class MovementJumpGravity : MonoBehaviour
         // shield stuff
         if (Input.GetButtonDown("Shield") || Input.GetButtonDown("Crouch"))
         {
-            if (!(Input.GetButton("Shield") && Input.GetButton("Crouch")))
+            if (!(Input.GetButtonDown("Shield") && Input.GetButtonDown("Crouch")))
             {
                 _pA.Shield.SetActive(true);
                 _pA.HandRig.weight = 1.0f;
@@ -209,17 +239,25 @@ public class MovementJumpGravity : MonoBehaviour
         }
         else if (Input.GetButtonUp("Shield") || Input.GetButtonUp("Crouch"))
         {
-            if (!Input.GetButton("Shield") && !Input.GetButton("Crouch"))
+            if ((Input.GetButtonUp("Shield") && !Input.GetButton("Crouch")) || (Input.GetButtonUp("Crouch") && !Input.GetButton("Shield")))
             {
+                Debug.Log("ShieldUp");
                 _pA.HandRig.weight = 0.0f;
                 _pA.AngleRig.weight = 0.0f;
                 _pA.Shield.SetActive(false);
             }
             if (Input.GetButtonUp("Crouch"))
             {
+                Debug.Log("ShieldUp2");
                 _pA.anim.CrossFade("Strafe", 0.0f, 0, 0.0f, 0.0f);
                 _pA.isCrouch = false;
             }
         }
+    }
+
+    public void jump()
+    {
+        Transition(true, "Air");
+        _pA.fallVelocity = _pA.jumpVelocity;
     }
 }

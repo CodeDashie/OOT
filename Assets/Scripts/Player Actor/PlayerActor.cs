@@ -6,16 +6,25 @@ public class PlayerActor : MonoBehaviour
 {
     // --
 
-    public enum State
+    public enum StateIndex
     {
         WALKING,
         ON_LEDGE,
         PUSHING_OBJECT,
         //HOLDING_OBJECT
-        LADDER
+        LADDER,
+        SIZE
     }
     
-    public State state { get; set; }
+    public StateIndex stateIndex { get; set; }
+    public State[] state;
+
+    public void SwitchState(StateIndex s)
+    {
+        state[(int)stateIndex].Deactivate();
+        state[(int)s].Activate();
+        stateIndex = s;
+    }
 
     // --
 
@@ -93,13 +102,20 @@ public class PlayerActor : MonoBehaviour
         controller = gameObject.GetComponent<CharacterController>();
 
         // set default state
-        state = State.WALKING;
+        stateIndex = StateIndex.WALKING;
         DEFAULT_CHARACTER_CONTROLLER_RADIUS = controller.radius;
 
+        state = new State[(int)(StateIndex.SIZE)];
         // attach and setup script components
         //GrabLedge grabLedge = _grabBox.AddComponent<GrabLedge>();
-        gameObject.AddComponent<MovementJumpGravity>().SetValues(this);
-        _grabLedgeBox.AddComponent<LadderState>().SetValues(this);
+
+        state[(int)StateIndex.WALKING] = gameObject.AddComponent<MovementJumpGravity>();
+        state[(int)StateIndex.WALKING].SetValues(this);
+        state[(int)StateIndex.WALKING].Activate();
+
+        state[(int)StateIndex.LADDER] = _grabLedgeBox.AddComponent<LadderState>();
+        state[(int)StateIndex.LADDER].SetValues(this);
+        
         //_grabLedgeBox.AddComponent<GrabLedge>().SetValues(this);
         //_grabObjectBox.AddComponent<GrabObject>().SetValues(this);
         //gameObject.AddComponent<MoveObject>().SetValues(this);
@@ -111,5 +127,10 @@ public class PlayerActor : MonoBehaviour
     private void OnLevelWasLoaded(int level)
     {
         camera = FindObjectOfType<Camera>();
+    }
+
+    public void SwitchState()
+    {
+
     }
 }

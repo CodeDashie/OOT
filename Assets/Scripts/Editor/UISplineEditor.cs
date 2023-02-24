@@ -9,6 +9,8 @@ namespace SplineAI
     [CustomEditor(typeof(UISpline))]
     public class UISplineEditor : Editor
     {
+        private const float ladderWidth = 1.2f;
+
         private Vector3 offsetPos(Vector3 p, float aa)
         {
             float x = p.x;
@@ -60,7 +62,7 @@ namespace SplineAI
                         0,
                         new Vector3(nn.points[0].x, nn.points[0].y + ((nn.points[1].y - nn.points[0].y) / 2), nn.points[0].z),
                         Quaternion.Euler(0, ladder.angle, 0),
-                        3.0f,
+                        ladderWidth,
                         EventType.Repaint
                     );
                 }

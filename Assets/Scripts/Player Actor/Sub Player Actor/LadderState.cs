@@ -2,53 +2,75 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LadderState : MonoBehaviour
+public class LadderState : State
 {
-    const float HALF_PI = 1.7079632679490f;
-    const float PI = 3.14159265358979f;
-    const float TAU = 6.28318530717958f;
-    const float Rad2Deg = 180.0f / PI;
-    const float Deg2Rad = PI / 180.0f;
-
-    private PlayerActor _pA;
     private CapsuleCollider _collider;
     private Collider _curLedge;
+    private float _curLedgeMinY;
+    private float _curLedgeMaxY;
     private float _actionTime = 0.1f;
     private float _actionTimer;
-    private float _regrabTime = 0.1f;
-    private float _regrabTimer;
+    private const float _regrabTime = 2.5f;
+    private float _regrabTimer = 0.0f;
+    private float _height;
 
     private bool _isClimbing = false;
     private bool _isStandingUp = false;
+    private bool _isClimbingUp = true;
+    private bool _isClimingOnLedge;
 
     private float _climbTime;
 
     private Vector3 climbPos = new Vector3(0, 0, 0);
 
-    public void SetValues(PlayerActor playerActor)
+    public override void SetValues(PlayerActor playerActor)
     {
         _pA = playerActor;
         _collider = _pA.GetComponent<CapsuleCollider>();
+        //_regrabTimer = _regrabTime;
+        CharacterController cc = _pA.gameObject.GetComponent<CharacterController>();
+        _height = cc.height;
     }
 
-    void ResetAllTriggers()
+    public override void Activate()
     {
-        foreach (AnimatorControllerParameter parameter in _pA.anim.parameters)
-            _pA.anim.ResetTrigger(parameter.name);
+        Debug.Log("Activate Ladder");
+        isActive = true;
+        _isClimbingUp = true;
+        _pA.anim.CrossFade("Ladder", 0.0f, 0, 0.0f, 0.0f);
+        _pA.fallVelocity = 0.0f;
+        _regrabTimer = _regrabTime;
     }
 
+    public override void Deactivate()
+    {
+        Debug.Log("Deactivate Ladder");
+        isActive = false;
+        //_regrabTimer = _regrabTime;
+    }
+
+    // smoothing between frames
     void FixedUpdate()
     {
-        /*Vector3 pAP = _pA.transform.position;
-        float test = (Mathf.Atan2(pAP.z + 13.0f, pAP.x) * (-1.0f)) + (PI / 2);
-        if (test < 0.0f)
-            test += (PI * 2);
-        Debug.Log(test);*/
+        if (_regrabTimer > 0.0f)
+            _regrabTimer -= Time.deltaTime;
+        if (isActive)
+            OnPhysics();
+    }
 
-        if (_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Climb") && _isClimbing)
+    // accurate input
+    private void Update()
+    {
+        if (isActive)
+            OnInput();
+    }
+
+    void OnPhysics()
+    {
+        if (_isClimingOnLedge)
         {
             const float DISTANCE = 3.0f;
-            float rotation = transform.eulerAngles.y * Deg2Rad;
+            float rotation = transform.eulerAngles.y * Maths.Deg2Rad;
             if (_climbTime < 0.45f)
             {
                 _pA.controller.Move(new Vector3(0.0f, 4.5f, 0.0f) * Time.deltaTime);
@@ -72,7 +94,7 @@ public class LadderState : MonoBehaviour
                 //_pA.controller.Move(v);
 
                 //const float DISTANCE = 1.0f;
-                //float rotation = transform.eulerAngles.y * Deg2Rad;
+                //float rotation = transform.eulerAngles.y * Maths.Deg2Rad;
                 //v.x = ;
                 //v.y = ;
                 //v = new Vector3(DISTANCE * Mathf.Sin(rotation), 0.0f, DISTANCE * Mathf.Cos(rotation));
@@ -83,66 +105,70 @@ public class LadderState : MonoBehaviour
 
             _climbTime += Time.deltaTime;
         }
-        //if (_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("StandUp") && _isStandingUp)
-        if (_pA.anim.GetCurrentAnimatorStateInfo(0).IsName("Idle") && _isStandingUp)
+
+
+        float y = Input.GetAxisRaw("Vertical");
+
+
+        if (y < 0.0f)
         {
-            //if (_pA.anim.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1.0f)
+            if (_isClimbingUp)
             {
-                _isStandingUp = false;
-                float x = Input.GetAxisRaw("Horizontal");
-                float y = Input.GetAxisRaw("Vertical");
-
-                if (x == 0.0f && y == 0.0f)
-                    ;// _pA.anim.SetTrigger("isIdling");
-
-                _pA.state = PlayerActor.State.WALKING;
+                _isClimbingUp = false;
+                _pA.anim.SetFloat("animSpeed", -1.0f);
             }
         }
+        else if (!_isClimbing)
+        {
+            _isClimbingUp = true;
+            _pA.anim.SetFloat("animSpeed", 1.0f);
+        }
+        if (y < 0.0f)
+            _pA.anim.speed = -y * 3.5f;
+        else
+            _pA.anim.speed = y * 3.5f;
+        _pA.controller.Move(new Vector3(0.0f, y * 5.0f, 0.0f) * Time.deltaTime);
+        
+        y = _pA.controller.transform.position.y;
+        if (y < _curLedgeMinY || _pA.controller.isGrounded)
+            _pA.SwitchState(PlayerActor.StateIndex.WALKING);
 
-        if (_regrabTimer >= 0.0f)
-            _regrabTimer -= Time.deltaTime;
+        if (y + _height > _curLedgeMaxY)
+            _pA.SwitchState(PlayerActor.StateIndex.WALKING);
+
     }
 
-    void Update()
+    void OnInput()
     {
         if (_actionTimer <= 0)
         {
-            if (_pA.state == PlayerActor.State.ON_LEDGE && !_isClimbing && !_isStandingUp)
+            if (!_isClimbing && !_isStandingUp)
             {
-
                 float y = Input.GetAxisRaw("Vertical");
-                
+
                 // jump
                 if (Input.GetButton("Jump"))
                 {
-                    _regrabTimer = _regrabTime;
-                    ResetAllTriggers();
-                    _pA.anim.SetTrigger("isJumping");
-                    _pA.isJumping = true;
-                    _pA.fallVelocity = _pA.jumpVelocity;
-                    _pA.state = PlayerActor.State.WALKING;
+                    _pA.SwitchState(PlayerActor.StateIndex.WALKING);
+                    ((MovementJumpGravity)_pA.state[(int)PlayerActor.StateIndex.WALKING]).jump();
+                }
+                else if (Input.GetButtonDown("Crouch"))
+                {
+                    _pA.SwitchState(PlayerActor.StateIndex.WALKING);
+                    float alpha = Maths.ClampAngle((_curLedge.transform.eulerAngles.y * Maths.Deg2Rad));
+                    Debug.Log(alpha);
+                    float xx = 2.0f * Mathf.Cos(alpha);
+                    float zz = 2.0f * Mathf.Sin(alpha);
+                    _pA.controller.Move(new Vector3(xx, 0.0f, zz));
                 }
                 // crawl up
-                else if (y > 0.0f)
-                {
-                    ResetAllTriggers();
-                    _pA.anim.SetTrigger("isClimbing");
-                    _isClimbing = true;
-                }
+                //else if (y > 0.0f)
+                //_isClimbing = true;
                 // drop
                 else if (y < 0.0f)
                 {
-                    _regrabTimer = _regrabTime;
-                    _pA.state = PlayerActor.State.WALKING;
-
-                    ResetAllTriggers();
-                    _pA.anim.SetTrigger("isFalling");
-
-                    //_pA.anim.SetTrigger("isIdling");
-
+                    //_pA.SwitchState(PlayerActor.StateIndex.WALKING);
                     //_pA.controller.Move(new Vector3(0.0f, 0.0f, _pA.DEFAULT_CHARACTER_CONTROLLER_RADIUS - _curLedge.transform.position.z - _pA.transform.position.z - 20.0f));
-
-                    //_pA.controller.radius = _pA.DEFAULT_CHARACTER_CONTROLLER_RADIUS;
                 }
             }
         }
@@ -150,86 +176,28 @@ public class LadderState : MonoBehaviour
             _actionTimer -= Time.deltaTime;
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log("Collide With Ladder.");
+    }
+
     private void OnTriggerStay(Collider other)
     {
-        if (_regrabTimer <= 0.0f && other.tag == "Ladder" && _pA.state != PlayerActor.State.ON_LEDGE && !_pA.isHoldingObject)
+        //Debug.Log("fasdsda");
+        if (_regrabTimer <= 0.0f && other.tag == "Ladder" && _pA.stateIndex != PlayerActor.StateIndex.LADDER && !_pA.isHoldingObject)
         {
-            
-            // setup current state and reset variables
+            //Debug.Log("pass");
             _actionTimer = _actionTime;
-                _pA.isWalking = false;
-                _pA.state = PlayerActor.State.ON_LEDGE;
-                _curLedge = other;
+            _pA.SwitchState(PlayerActor.StateIndex.LADDER);
+            _curLedge = other;
 
-                ResetAllTriggers();
-                _pA.anim.SetTrigger("isLedgeGrab");
-
-                _pA.fallVelocity = 0.0f;
-            
-
-            GameObject o = other.transform.GetChild(0).gameObject;
-            
-            // move air position
-
-                _pA.controller.Move(new Vector3(0.0f, o.transform.position.y - _pA.transform.position.y - 0.95f, 0.0f));
-
-            // move ground position
-
-            // hypotenuse
-            // (o = object)
-            // (h = hypotonuse)
-            // (pA = player actor)
-
-                float oAngle = o.transform.eulerAngles.y * Deg2Rad;
-                float hAngle = oAngle + HALF_PI;
-                float pAScale = o.transform.localScale.x;// / 2.0f;
-            
-                Vector3 v = new Vector3(pAScale * Mathf.Sin(hAngle), 0.0f, pAScale * Mathf.Cos(hAngle));
-            
-                Vector3 p = o.transform.position + v;
-                Vector3 pAP = _pA.transform.position;
-
-                float hypotenuse = DistanceBetweenTwoPoints(new Vector2(p.x, p.z), new Vector2(pAP.x, pAP.z));
-
-            // angle
-
-                float x = p.x - pAP.x;
-                float y = p.z - pAP.z;
-                float angle = Mathf.Atan2(y, x);
-                angle = ClampAngle(((angle * (-1.0f)) + (PI / 2)) - oAngle);
-            
-            // adjacent
-
-                float adjacent = hypotenuse * Mathf.Cos(angle);
-                //adjacent -= _pA.controller.radius;
-
-
-            //
-            
-            Vector3 vA = new Vector3(adjacent * Mathf.Sin(oAngle), 0.0f, adjacent * Mathf.Cos(oAngle));
-            _pA.controller.Move(vA);
-            
-            _pA.transform.rotation = Quaternion.Euler(new Vector3(0.0f, o.transform.eulerAngles.y, 0.0f));
-        }
-
+            BoxCollider bc = other.GetComponent<BoxCollider>();
+            float sizeY = bc.size.y / 2.0f;
+            float posY = bc.transform.position.y;
+            _curLedgeMinY = posY - sizeY;
+            _curLedgeMaxY = posY + sizeY;
+            _pA.controller.Move(new Vector3(other.transform.position.x - _pA.transform.position.x, 0.0f, other.transform.position.z - _pA.transform.position.z));
+            _pA.controller.transform.eulerAngles = new Vector3(0, other.transform.eulerAngles.y, 0);
+        } 
     }
-    
-    private static float ClampAngle(float a)
-    {
-        if (a < 0.0f)
-            a += TAU;
-        if (a > TAU)
-            a -= TAU;
-
-        return a;
-    }
-
-    private static float DistanceBetweenTwoPoints(Vector2 vA, Vector2 vB)
-    {
-        float x = vB.x - vA.x;
-        float y = vB.y - vA.y;
-
-        return Mathf.Sqrt(x * x + y * y);
-    }
-    
 }

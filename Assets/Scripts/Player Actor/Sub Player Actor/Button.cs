@@ -18,7 +18,7 @@ public class Button : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (Input.GetButton("Fire1") && _pA.state == PlayerActor.State.WALKING && other.tag == "Button")
+        if (Input.GetButton("Fire1") && _pA.stateIndex == PlayerActor.StateIndex.WALKING && other.tag == "Button")
         {
             ButtonTrigger bT = other.gameObject.GetComponent<ButtonTrigger>();
             if (bT != null)
