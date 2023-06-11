@@ -90,8 +90,6 @@ namespace SplineAI
                 Gizmos.DrawCube(new Vector3(0.0f, points[0].y, ladderWidth * Mathf.Sin(ladder.angle)), new Vector3(ladderWidth, ladderWidth, ladderWidth));
                 
                 Gizmos.DrawCube(new Vector3(0.0f, points[1].y, -ladderWidth * Mathf.Sin(ladder.angle)), new Vector3(ladderWidth, ladderWidth, ladderWidth));
-
-                Gizmos.DrawCube(new Vector3(0.0f, points[1].y + 2.0f, -(ladderWidth + 2.0f) * Mathf.Sin(ladder.angle)), new Vector3(ladderWidth, ladderWidth, ladderWidth));
                 Gizmos.color = Color.white;
             }
         }

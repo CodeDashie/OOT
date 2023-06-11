@@ -8,11 +8,11 @@ public class PlayerActor : MonoBehaviour
 
     public enum StateIndex
     {
-        WALKING,            // main state
-        ON_LEDGE,           // main state
-        PUSHING_OBJECT,     // main state
-        //HOLDING_OBJECT    // attribute state
-        LADDER,             // main state
+        WALKING,
+        ON_LEDGE,
+        PUSHING_OBJECT,
+        //HOLDING_OBJECT
+        LADDER,
         SIZE
     }
     
@@ -28,41 +28,26 @@ public class PlayerActor : MonoBehaviour
 
     // --
 
+    // flashlight
+    public bool flashlightEnabled;
+
     // attributes
     public float walkSpeed = 5.0f;
     public float runSpeed = 10.0f;
-    public float airSpeed = 10.0f;
-    public float airSpeedClamp = 0.1f;
     public float turnSpeed = 17.5f;
-    public float turnSpeedAir = 7.5f;
-
-    public float idleMag = 0.1f;
-    public float walkMag = 0.2f;
-    public float runMag = 0.7f;
-    public int idleFrames = 4;
-    public int walkFrames = 4;
-
-    public float idleAnimParam = 0.0f;
-    public float walkAnimParam = 0.7f;
-    public float runAnimParam = 1.0f;
 
     public float jumpVelocity = 10.0f;
-    public int jumpLockFrames = 3;
     public float gravity = -0.4f;
     public float groundedGravity = -4.0f;
 
     public float pushPower = 2.0f;
     public float throwPower = 250.0f;
-    
-    [HideInInspector]
-    public new Camera camera;
 
-    public MultiAimConstraint ChestAim;
-    public MultiAimConstraint HeadAim;
-    public GameObject ShieldTarget;
-    public GameObject ShieldTargetStand;
-    public GameObject ShieldTargetCrouch;
-    public GameObject ShieldBack;
+    // default character controller radius
+    public float DEFAULT_CHARACTER_CONTROLLER_RADIUS { get; private set; }
+    
+    //[HideInInspector]
+    public /*new*/ Camera camera;
 
     public bool isController = true;
 
@@ -86,9 +71,19 @@ public class PlayerActor : MonoBehaviour
     [SerializeField]
     private GameObject _grabObjectBox;
     public GameObject Shield;
-    public float shieldMaxAngle = 20.0f;
     public Rig HandRig;
     public Rig AngleRig;
+
+    public float energy;
+    public int minimumRespawnEnergy;
+
+    [Range(1, 10)]
+    public int standardEnergyMultiplier;
+
+    [Range(1, 10)]
+    public int flashlightEnergyMultiplier;
+
+    public Transform testObject;
 
     public delegate void OnPlayerDeathDelegate();
     //public static event OnPlayerDeathDelegate onPlayerDeathEvent;
@@ -108,6 +103,7 @@ public class PlayerActor : MonoBehaviour
 
         // set default state
         stateIndex = StateIndex.WALKING;
+        DEFAULT_CHARACTER_CONTROLLER_RADIUS = controller.radius;
 
         state = new State[(int)(StateIndex.SIZE)];
         // attach and setup script components
