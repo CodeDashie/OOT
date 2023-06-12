@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "Hyrule/inside_the_deku_tree/dg01_iwa_02_0"
+	"$phong" "1"
+	"$basemapalphaphongmask" "1"
+}

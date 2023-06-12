@@ -1,0 +1,11 @@
+"VertexLitGeneric"
+{
+	"$alphatest" "1"
+	"$basetexture" "Hyrule/dungeon_assets/door_lock/doorkusari_mode_0"
+	"$nocull" "1"
+
+	"$envmap" "Hyrule/dungeon_assets/common/cubemap"
+	"$envmaptint" "[0.9 0.9 1]"
+	"$envmapcontrast" "1"
+}
+
